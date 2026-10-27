@@ -4,15 +4,16 @@ I wanted a way to find public Chained Beasts games without swapping lobby codes.
 This is my first pass: a small Steam lobby browser that uses the game's existing
 hosting and joining system.
 
-**Experimental 0.1.0 preview.** The build and nongame checks pass. The in-game
-panel, live Steam searches, and joining still need testing. This does not fix
-multiplayer gameplay or round-transition bugs in other mods.
+**Experimental 0.1.1 preview.** The panel and public lobby searches have been
+seen working. This fixes 0.1.0 blocking every ordinary room with “Invalid lobby
+identity.” The build and nongame checks pass; successful connections still need
+testing. This does not fix multiplayer gameplay or round-transition bugs in other mods.
 
 ## What it does
 
 - Adds **Find public games** at the main menu. **F6** also opens/closes it.
 - Lists open Steam lobbies, including hosts who haven't installed this mod.
-- Shows host names, Steam member counts, and available mod information.
+- Shows advertised room names (or a lobby ID), Steam member counts, and available mod information.
 - Offers regional or worldwide searches and pages through the results.
 - Refreshes the selected lobby before joining through the game's normal flow.
 - Keeps known game-build and Foundation/TC mismatches from joining through the browser.
@@ -23,11 +24,18 @@ Unity Relay/cross-platform discovery is outside this version. Member counts mean
 Steam accounts, so a couch co-op player may not count as another Steam member.
 
 **“Mods unknown” does not mean vanilla.** Most ordinary lobbies have no mod
-information. Check the host's setup before ticking the confirmation and joining.
-When both sides have this browser and Foundation, matching fingerprints can show
-**Foundation matched**. That checks Foundation-registered gameplay content and
-settings; unrelated mods aren't covered. Native admission and Foundation's
-existing handshake still decide whether the connection is accepted.
+information. With only this browser installed, select a room and join normally.
+If I also have Foundation/TC installed, unmarked hosts need confirmation that
+their setup matches. When a host publishes matching Foundation information, the
+label says **Advertised Foundation match**. This is a metadata hint covering
+Foundation-registered gameplay content/settings; unrelated mods aren't covered.
+Native admission and Foundation's handshake still decide whether a connection
+is accepted.
+
+Steam hides lobby-owner identities until joining, so ordinary listings often
+show `Lobby <ID>` instead of a host's name. That is expected and does not make
+the room invalid. Public rooms can still fill, close, or reject a connection
+after a search; the browser does not override the host's admission rules.
 
 ## Install
 
@@ -104,7 +112,8 @@ for the native integration and remaining limits.
 1. Start at the main menu and check that the button/F6 panel opens and closes.
 2. Refresh regionally, then worldwide. An empty list is a valid result.
 3. Have a friend host a fresh normal **Steam** lobby and wait before starting.
-   Their browser mod is optional. Refresh and look for their host name.
+   Their browser mod is optional. Refresh and find their lobby; ordinary rooms
+   may show a lobby ID rather than the host's name.
 4. Check the mod setup, select their lobby, and join. Confirm native character
    selection and ready/start behavior still work on both PCs.
 5. Separately check code-entry/invites, closing a listed lobby, a full lobby, and

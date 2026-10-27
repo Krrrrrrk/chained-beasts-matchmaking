@@ -1,7 +1,7 @@
-# 0.1.0 implementation notes
+# 0.1.1 implementation notes
 
-This is a local-built preview awaiting manual Steam/Unity tests, not a working
-matchmaking claim. It targets the inspected game 1.0.2, Steam build 26231777,
+The panel and public searches have been observed in a manual test. Connection
+success still awaits a manual test of this fix. It targets game 1.0.2, Steam build 26231777,
 GameAssembly SHA-256
 `ba3ef02fa87da4c41bb27d7610539c9578132204f0fb5713833e2ef93415ce29`.
 BepInEx's generated runtime interop assemblies are compile references only;
@@ -24,10 +24,18 @@ mode; it does not enable joining that build.
 It copies IDs and data inside its own rooted `CallResult<LobbyMatchList_t>`
 callback. Pagination bounds UI work; search count is bounded to 50. Results older
 than 60 seconds need a refresh. On Join it requests `RequestLobbyData` and waits
-for a matching lobby-level `LobbyDataUpdate_t`, then rechecks build, owner,
+for a matching lobby-level `LobbyDataUpdate_t`, then rechecks build,
 transport, capacity, and advertised Foundation compatibility. Metadata is a hint:
 Steam notifications have no per-request nonce, joinability has no native getter
 here, and state can change after the refresh. Native approval remains authoritative.
+
+**0.1.0 directory bug:** `GetLobbyOwner` is a membership-only API and returns nil
+before joining. The old reader treated that expected nil as an invalid lobby and
+displayed `Host 000000`, disabling Join for normal public rooms. The directory
+reader now has no owner/member-identity lookup in its interface. It reads only
+public metadata and member counts; an unknown owner is valid. Missing room names
+use `Lobby <ID>`. The native join obtains the real owner after entering Steam's
+lobby. See [Valve's GetLobbyOwner contract](https://partner.steamgames.com/doc/api/ISteamMatchmaking#GetLobbyOwner).
 
 The join action uses `JoinCodeTag.Format(Steam, numericLobbyId)` and
 `GameManager.JoinRemoteServer(string)`. This preserves the game's own transition,
@@ -63,12 +71,15 @@ or a changed method yields Unknown. There is no compile-time Foundation dependen
 and no modification of its DLL, ownership, checkpoints, or handshake.
 
 The native lobby owner can publish `cbmm_protocol=1`, `cbmm_owner=<ownerSteamId>`,
-`cbmm_state=waiting|closed`, and `cbmm_compat=<FoundationDigest|unknown>` every two
+`cbmm_state=waiting|closed`, `cbmm_name=<displayName>`, and `cbmm_compat=<FoundationDigest|unknown>` every two
 seconds when changed. Waiting requires native `isLobbyOpen` and a loaded
-`GameServerLobby` scene. It never opens that lobby itself. Owner changes invalidate
-old compatibility tags; a known digest difference blocks the browser's Join.
+`GameServerLobby` scene. It never opens that lobby itself. The advertised owner is
+unverified outside membership; it is never substituted for an actual Steam owner.
+An advertised owner change during refresh requires reselection. Digests are
+compared as advertised hints and a known difference blocks the browser's Join.
 No tag, malformed tags, or a failed optional bridge mean **mods unknown**, not
-vanilla. Joining unknown setups requires explicit confirmation in the panel.
+vanilla. Only a local Foundation install requires confirmation for an unknown
+setup; a browser-only install can attempt ordinary native admission directly.
 The digest covers only Foundation-registered content, prices, enable settings
 and registered gameplay binaries. Other mods may still be incompatible. Names
 and remote metadata are bounded/sanitized for display and never treated as code.

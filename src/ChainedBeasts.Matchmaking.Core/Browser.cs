@@ -61,7 +61,7 @@ public sealed class Browser
         if (lobby == null) return Reject("Select a lobby from the current results.");
         var assessment = LobbyPolicy.Assess(lobby, context);
         if (!assessment.Allowed) return Reject(assessment.Detail);
-        if (assessment.Compatibility == Compatibility.Unknown && !acknowledgeUnknownMods)
+        if (LobbyPolicy.NeedsModConfirmation(assessment, context) && !acknowledgeUnknownMods)
             return Reject("Confirm you checked the host's mod setup, then press Join.");
         _selected = lobby;
         _acknowledged = acknowledgeUnknownMods;
@@ -79,10 +79,13 @@ public sealed class Browser
         if (error != null || lobby == null) { Fail(error ?? "The lobby is no longer available."); return; }
         if (lobby.Id != _selected?.Id) return; // unrelated lobby-data callbacks must not complete this operation
         if (!context.Available) { Fail(context.Reason); return; }
-        if (lobby.Owner != _selected.Owner) { Fail("The lobby host changed. Refresh the list."); return; }
+        if (lobby.Owner != 0 && _selected.Owner != 0 && lobby.Owner != _selected.Owner)
+        { Fail("The lobby host changed. Refresh the list."); return; }
+        if (_selected.Protocol == "1" && lobby.Protocol == "1" && lobby.AdvertOwner != _selected.AdvertOwner)
+        { Fail("The advertised host changed. Refresh the list."); return; }
         var assessment = LobbyPolicy.Assess(lobby, context);
         if (!assessment.Allowed) { Fail(assessment.Detail); return; }
-        if (assessment.Compatibility == Compatibility.Unknown && !_acknowledged)
+        if (LobbyPolicy.NeedsModConfirmation(assessment, context) && !_acknowledged)
         { Fail("Mod information changed. Check it with the host and select the lobby again."); return; }
         Operation = Operation.Joining; // set before native entry invokes our cancellation prefix
         _backend.CancelDiscovery();

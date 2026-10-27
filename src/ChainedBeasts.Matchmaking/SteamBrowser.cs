@@ -137,19 +137,17 @@ internal sealed class SteamBrowser : ILobbyBackend, IDisposable
     private static Lobby ReadLobby(CSteamID id)
     {
         if (!id.IsValid() || !id.IsLobby()) throw new InvalidOperationException("Invalid Steam lobby ID.");
-        var owner = SteamMatchmaking.GetLobbyOwner(id);
-        var name = SteamFriends.GetFriendPersonaName(owner);
-        if (string.IsNullOrEmpty(name) || name == "[unknown]")
-        {
-            // Steam fills its persona cache asynchronously; a later refresh can show the name.
-            SteamFriends.RequestUserInformation(owner, true);
-            name = "Host " + (owner.m_SteamID % 1_000_000).ToString("D6", CultureInfo.InvariantCulture);
-        }
-        return new(id.m_SteamID, owner.m_SteamID, LobbyPolicy.Display(name),
-            SteamMatchmaking.GetLobbyData(id, "build"), SteamMatchmaking.GetLobbyData(id, "transport_type"),
-            SteamMatchmaking.GetNumLobbyMembers(id), SteamMatchmaking.GetLobbyMemberLimit(id),
-            SteamMatchmaking.GetLobbyData(id, LobbyPolicy.ProtocolKey), SteamMatchmaking.GetLobbyData(id, LobbyPolicy.FingerprintKey),
-            SteamMatchmaking.GetLobbyData(id, LobbyPolicy.OwnerKey), SteamMatchmaking.GetLobbyData(id, LobbyPolicy.StateKey));
+        return LobbyDirectoryReader.Read(new SteamDirectoryEntry(id));
+    }
+
+    private sealed class SteamDirectoryEntry : ILobbyDirectoryEntry
+    {
+        private readonly CSteamID _id;
+        internal SteamDirectoryEntry(CSteamID id) => _id = id;
+        public ulong Id => _id.m_SteamID;
+        public int Members => SteamMatchmaking.GetNumLobbyMembers(_id);
+        public int MemberLimit => SteamMatchmaking.GetLobbyMemberLimit(_id);
+        public string Data(string key) => SteamMatchmaking.GetLobbyData(_id, key);
     }
 
     public void RefreshLobby(long token, ulong lobby)
@@ -215,11 +213,13 @@ internal sealed class SteamBrowser : ILobbyBackend, IDisposable
             var fingerprint = FoundationCompatibility.Read() ?? "unknown";
             var owner = SteamUser.GetSteamID().m_SteamID.ToString(CultureInfo.InvariantCulture);
             var state = waiting ? "waiting" : "closed";
-            var identity = id.m_SteamID + "/" + fingerprint + "/" + state;
+            var name = LobbyPolicy.Display(SteamFriends.GetPersonaName());
+            var identity = id.m_SteamID + "/" + fingerprint + "/" + state + "/" + name;
             if (_lastAdvert == identity) return;
             var okay = SteamMatchmaking.SetLobbyData(id, LobbyPolicy.ProtocolKey, "1") &
                 SteamMatchmaking.SetLobbyData(id, LobbyPolicy.OwnerKey, owner) &
                 SteamMatchmaking.SetLobbyData(id, LobbyPolicy.FingerprintKey, fingerprint) &
+                SteamMatchmaking.SetLobbyData(id, LobbyPolicy.NameKey, name) &
                 SteamMatchmaking.SetLobbyData(id, LobbyPolicy.StateKey, state);
             _advertisedLobby = id.m_SteamID;
             if (okay) _lastAdvert = identity;

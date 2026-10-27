@@ -7,7 +7,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$version = '0.1.0'
+$version = '0.1.1'
 $nativeHash = 'ba3ef02fa87da4c41bb27d7610539c9578132204f0fb5713833e2ef93415ce29'
 $assemblies = @('ChainedBeasts.Matchmaking.dll', 'ChainedBeasts.Matchmaking.Core.dll')
 $project = Join-Path $repoRoot 'src\ChainedBeasts.Matchmaking\ChainedBeasts.Matchmaking.csproj'

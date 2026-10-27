@@ -89,8 +89,8 @@ public sealed class BrowserController : MonoBehaviour
             {
                 var lobby = lobbies[i];
                 var assessment = LobbyPolicy.Assess(lobby, service.Context);
-                var label = assessment.Compatibility switch { Compatibility.FoundationMatched => "Foundation matched", Compatibility.Blocked => "Unavailable", _ => "Mods unknown" };
-                if (GUILayout.Button($"{(_selected == lobby.Id ? "> " : "")}{lobby.Host} — {lobby.Members}/{lobby.MemberLimit} Steam members — {label}"))
+                var label = assessment.Compatibility switch { Compatibility.FoundationMatched => "Advertised Foundation match", Compatibility.Blocked => "Unavailable", _ => "Mods unknown" };
+                if (GUILayout.Button($"{(_selected == lobby.Id ? "> " : "")}{lobby.Title} — {lobby.Members}/{lobby.MemberLimit} Steam members — {label}"))
                 { _selected = lobby.Id; _acknowledge = false; }
             }
             GUILayout.BeginHorizontal();
@@ -98,17 +98,19 @@ public sealed class BrowserController : MonoBehaviour
             GUILayout.Label($"Page {_page + 1}/{pages}");
             if (GUILayout.Button("Next")) _page = Math.Min(pages - 1, _page + 1);
             GUILayout.EndHorizontal();
-            var selected = lobbies.FirstOrDefault(x => x.Id == _selected);
+            // Avoid a compiler-generated Lobby-parameter method on this injected MonoBehaviour.
+            Lobby selected = null;
+            foreach (var lobby in lobbies) { if (lobby.Id == _selected) { selected = lobby; break; } }
             if (selected != null)
             {
                 var assessment = LobbyPolicy.Assess(selected, service.Context);
                 GUILayout.Space(8);
-                GUILayout.Label($"Host: {selected.Host} | Build: {LobbyPolicy.Display(selected.Build, 60)}");
+                GUILayout.Label($"Name: {selected.Title} | Build: {LobbyPolicy.Display(selected.Build, 60)}");
                 GUILayout.Label(assessment.Detail);
-                if (assessment.Compatibility == Compatibility.Unknown)
-                    _acknowledge = GUILayout.Toggle(_acknowledge, "I checked the host's mod setup and want to join.");
+                if (LobbyPolicy.NeedsModConfirmation(assessment, service.Context))
+                    _acknowledge = GUILayout.Toggle(_acknowledge, "I checked this host has the same Foundation/TC setup.");
                 GUI.enabled = service.Context.Available && service.Browser.Operation == Operation.Idle && assessment.Allowed &&
-                    (assessment.Compatibility != Compatibility.Unknown || _acknowledge);
+                    (!LobbyPolicy.NeedsModConfirmation(assessment, service.Context) || _acknowledge);
                 if (GUILayout.Button("Join selected lobby")) _join = true;
                 GUI.enabled = enabled;
             }
