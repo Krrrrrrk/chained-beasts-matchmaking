@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+/artifacts/
+/backups/
+/analysis/
+*.dll
+*.exe
+*.pdb
+*.log
+.vs/
+.idea/
