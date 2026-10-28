@@ -4,14 +4,16 @@ I wanted a way to find public Chained Beasts games without swapping lobby codes.
 This is my first pass: a small Steam lobby browser that uses the game's existing
 hosting and joining system.
 
-**Experimental 0.1.1 preview.** The panel and public lobby searches have been
-seen working. This fixes 0.1.0 blocking every ordinary room with “Invalid lobby
-identity.” The build and nongame checks pass; successful connections still need
-testing. This does not fix multiplayer gameplay or round-transition bugs in other mods.
+**Experimental 0.1.2 preview.** I've given the browser a clearer dark panel,
+gold headings, teal actions, lobby cards, and a separate room-details pane.
+The search/join flow carries over from 0.1.1. Builds and nongame checks pass;
+the new styling still needs an in-game visual check. Other mods' gameplay or
+round-transition behavior is outside this browser's scope.
 
 ## What it does
 
 - Adds **Find public games** at the main menu. **F6** also opens/closes it.
+- Scales the panel and text to the window, highlights the selected room, and shows a refresh countdown.
 - Lists open Steam lobbies, including hosts who haven't installed this mod.
 - Shows advertised room names (or a lobby ID), Steam member counts, and available mod information.
 - Offers regional or worldwide searches and pages through the results.

@@ -1,7 +1,7 @@
-# 0.1.1 implementation notes
+# 0.1.2 implementation notes
 
-The panel and public searches have been observed in a manual test. Connection
-success still awaits a manual test of this fix. It targets game 1.0.2, Steam build 26231777,
+The 0.1.1 search/join fix was confirmed working in a manual test. The new 0.1.2
+presentation still needs an in-game visual check. It targets game 1.0.2, Steam build 26231777,
 GameAssembly SHA-256
 `ba3ef02fa87da4c41bb27d7610539c9578132204f0fb5713833e2ef93415ce29`.
 BepInEx's generated runtime interop assemblies are compile references only;
@@ -61,6 +61,27 @@ is skipped. The panel uses the basic IMGUI controls retained by the game; it avo
 the stripped IMGUI scroll-view path, uses pages, and queues network/UI actions for
 `Update` rather than executing them in `OnGUI`. Cursor state is restored on close
 or destruction. Other game menus should be closed before opening the browser.
+
+## Presentation in 0.1.2
+
+The managed `BrowserMenuView` and `BrowserTheme` draw an opaque ink-colored panel,
+gold headings, teal actions, five lobby cards per page, and a room-details pane.
+Geometry, hit targets and fonts share one scale factor. Long names are measured
+and shortened with an ellipsis; full lobby IDs remain visible. GUI colors,
+enabled state and draw depth are restored after each draw. Styles are private
+to this view and reuse the existing GUI font. No texture/font assets are bundled.
+
+Only UI actions are queued for `Update`. Filter changes wait for the existing
+refresh cooldown, the button shows its countdown, and joining is disabled while
+the chosen room is being checked. The Steam backend, compatibility policy,
+directory reader and native join hooks are unchanged. The injected controller
+has no managed-Lobby-parameter callbacks. A basic retained-control fallback is
+available if custom drawing fails; it avoids the stripped scroll-view path.
+
+Offline design previews use the production renderer with inert Unity substitutes
+and sample rooms. They exercise layout at 720p, 1080p and 1440p, not native Unity
+drawing or live connections. `UnityEngine.TextRenderingModule` is an existing
+game-owned compile reference; only the two matchmaking DLLs are packaged.
 
 ## Optional Foundation identification
 

@@ -16,7 +16,7 @@ public sealed class Plugin : BasePlugin
 {
     public const string Guid = "local.chainedbeasts.matchmaking";
     public const string Name = "Chained Beasts Matchmaking";
-    public const string Version = "0.1.1";
+    public const string Version = "0.1.2";
     internal static ManualLogSource Logger = null!;
     internal static ConfigEntry<Key> ToggleKey = null!;
     internal static ConfigEntry<bool> AdvertiseCompatibility = null!;
