@@ -152,6 +152,11 @@ directoryBrowser.SearchCompleted(directoryBackend.Token, new[] { matched with { 
 Check(directoryBrowser.BeginJoin(matched.Id, false, 7, context), "Matching advertised profile with unknown owner reaches refresh.");
 directoryBrowser.LobbyRefreshed(directoryBackend.Token, matched with { Owner = 0, AdvertOwner = "21" }, null, context);
 Check(directoryBrowser.Status.Contains("advertised host changed") && directoryBackend.Joins.Count == 1, "Changed owner advertisement requires reselection.");
+PingChecks.Run(Check);
+PingGroundChecks.Run(Check);
+ChatChecks.Run(Check);
+ModerationChecks.Run(Check);
+DiscoveryChecks.Run(Check);
 Console.WriteLine($"PASS: {checks} production-core nongame checks. No Steam or Unity calls executed.");
 
 sealed class FakeBackend : ILobbyBackend

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net6.0</TargetFramework><OutputType>Exe</OutputType><Nullable>disable</Nullable><ImplicitUsings>enable</ImplicitUsings><RollForward>LatestMajor</RollForward><CheckEolTargetFramework>false</CheckEolTargetFramework></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\ChatView.cs" Link="Production/ChatView.cs" />
+    <ProjectReference Include="..\..\src\ChainedBeasts.Matchmaking.Core\ChainedBeasts.Matchmaking.Core.csproj" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\PingView.cs" Link="Production/PingView.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\BrowserTheme.cs" Link="Production/BrowserTheme.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\UiIcons.cs" Link="Production/UiIcons.cs" />
+    <EmbeddedResource Include="..\..\src\ChainedBeasts.Matchmaking\Assets\*.alpha" LogicalName="Matchmaking.Icons.%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

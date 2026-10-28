@@ -1,0 +1,57 @@
+{
+  "author": "Kenney",
+  "mirrorCommit": "3694c6879e487c108f55677be7dd2ca75b07cc3b",
+  "adaptation": "Alpha-only, cropped, centered with padding in 64x64; bottom-up rows; runtime palette tint.",
+  "icons": [
+    {
+      "icon": "Target",
+      "source": "sources/target.png",
+      "sourceUrl": "https://raw.githubusercontent.com/shorepine/kenney/3694c6879e487c108f55677be7dd2ca75b07cc3b/icons/Game%20Icons/White/2x/target.png",
+      "upstream": "https://kenney.nl/assets/game-icons",
+      "license": "CC0-1.0",
+      "sourceSha256": "e2a97aa75b234c276ba4ed5673c7cda04f76a4566dc042256e2fe41028516aa3",
+      "embedded": "../../src/ChainedBeasts.Matchmaking/Assets/Target.alpha",
+      "embeddedSha256": "b8e7158b9b9de61e4b9b947302910ce939f373c4a8a637817153530886456005"
+    },
+    {
+      "icon": "Heart",
+      "source": "sources/heart-8.png",
+      "sourceUrl": "https://raw.githubusercontent.com/shorepine/kenney/3694c6879e487c108f55677be7dd2ca75b07cc3b/2d/Emote%20Pack/Pixel/Style%208/emote_heart.png",
+      "upstream": "https://kenney.nl/assets/emotes-pack",
+      "license": "CC0-1.0",
+      "sourceSha256": "2910b82a0fd9c0440bb8ddea317c6bb7aa061b40443a07a27c5432a2f6f6bad1",
+      "embedded": "../../src/ChainedBeasts.Matchmaking/Assets/Heart.alpha",
+      "embeddedSha256": "19ff32d51489832c08ea983fc417d8d048c416bd4a65f50ba6624f9fff5667e6"
+    },
+    {
+      "icon": "Sorry",
+      "source": "sources/faceSad-8.png",
+      "sourceUrl": "https://raw.githubusercontent.com/shorepine/kenney/3694c6879e487c108f55677be7dd2ca75b07cc3b/2d/Emote%20Pack/Pixel/Style%208/emote_faceSad.png",
+      "upstream": "https://kenney.nl/assets/emotes-pack",
+      "license": "CC0-1.0",
+      "sourceSha256": "c34a613000e7714391fe0e76a89a96eaef6334019f54ddc76ee509f6566f0420",
+      "embedded": "../../src/ChainedBeasts.Matchmaking/Assets/Sorry.alpha",
+      "embeddedSha256": "86da932fef0e3e1ce941f5e50245276c8a3771a6dbec1d7b49dff7189b671ff8"
+    },
+    {
+      "icon": "Party",
+      "source": "sources/multiplayer.png",
+      "sourceUrl": "https://raw.githubusercontent.com/shorepine/kenney/3694c6879e487c108f55677be7dd2ca75b07cc3b/icons/Game%20Icons/White/2x/multiplayer.png",
+      "upstream": "https://kenney.nl/assets/game-icons",
+      "license": "CC0-1.0",
+      "sourceSha256": "03de2472eae965e8df5defc93a5b144c065502abf159fd4a36a1c78a754c7175",
+      "embedded": "../../src/ChainedBeasts.Matchmaking/Assets/Party.alpha",
+      "embeddedSha256": "c472ae41a0695a41f00a8e3d9b6fbedbf7e6c6026caae62c7f3a7584448e5cd8"
+    },
+    {
+      "icon": "Lock",
+      "source": "sources/locked.png",
+      "sourceUrl": "https://raw.githubusercontent.com/shorepine/kenney/3694c6879e487c108f55677be7dd2ca75b07cc3b/icons/Game%20Icons/White/2x/locked.png",
+      "upstream": "https://kenney.nl/assets/game-icons",
+      "license": "CC0-1.0",
+      "sourceSha256": "de4f91e671256321313f68727817db3d6bfd9092f627f5790ddf24cf7a0a587f",
+      "embedded": "../../src/ChainedBeasts.Matchmaking/Assets/Lock.alpha",
+      "embeddedSha256": "717a3a554645a9a9559cceca5b24d0b71ca21340a65339be25d879534571fbeb"
+    }
+  ]
+}

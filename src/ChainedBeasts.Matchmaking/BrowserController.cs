@@ -22,12 +22,17 @@ public sealed class BrowserController : MonoBehaviour
             var service = Plugin.Service;
             if (service == null) { if (IsOpen) SetOpen(false); return; }
             service.Tick();
+            if (!Plugin.BrowserEnabled)
+            {
+                SetOpen(false); _menu.OpenRequested = _menu.RefreshRequested = _menu.JoinRequested = false;
+                return;
+            }
             var inMenu = GameManager.InstanceExists && GameManager.Instance.State == GameManager.eState.MENU;
             if (CloseRequested || _menu.CloseRequested || !inMenu)
             { CloseRequested = _menu.CloseRequested = false; SetOpen(false); _menu.OpenRequested = false; }
             var keyboard = Keyboard.current;
             var key = Plugin.ToggleKey.Value;
-            if (inMenu && (_menu.OpenRequested || keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame))
+            if (inMenu && !ChatController.BlocksInput && (_menu.OpenRequested || keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame))
             { _menu.OpenRequested = false; SetOpen(!IsOpen); }
             if (IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame) SetOpen(false);
             var now = Time.realtimeSinceStartupAsDouble;
@@ -54,7 +59,7 @@ public sealed class BrowserController : MonoBehaviour
     public void OnGUI()
     {
         var service = Plugin.Service;
-        if (service == null || !GameManager.InstanceExists || GameManager.Instance.State != GameManager.eState.MENU) return;
+        if (!Plugin.BrowserEnabled || service == null || !GameManager.InstanceExists || GameManager.Instance.State != GameManager.eState.MENU) return;
         try { _menu.Draw(service, IsOpen); }
         catch (Exception e)
         {
@@ -82,5 +87,5 @@ public sealed class BrowserController : MonoBehaviour
             Plugin.Service?.Browser.Cancel();
         }
     }
-    public void OnDestroy() { if (IsOpen) SetOpen(false); }
+    public void OnDestroy() { if (IsOpen) SetOpen(false); _menu.Dispose(); }
 }

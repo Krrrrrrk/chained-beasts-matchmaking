@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RollForward>LatestMajor</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\ChatProfanity.cs" Link="Production/ChatProfanity.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\ChatNetwork.cs" Link="Production/ChatNetwork.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\ChatController.cs" Link="Production/ChatController.cs" />
+    <ProjectReference Include="..\..\src\ChainedBeasts.Matchmaking.Core\ChainedBeasts.Matchmaking.Core.csproj" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\PingNetwork.cs" Link="Production/PingNetwork.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\GamepadPings.cs" Link="Production/GamepadPings.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\PingWorld.cs" Link="Production/PingWorld.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\PingController.cs" Link="Production/PingController.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\HostModerationService.cs" Link="Production/HostModerationService.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\HostToolsController.cs" Link="Production/HostToolsController.cs" />
+  </ItemGroup>
+</Project>

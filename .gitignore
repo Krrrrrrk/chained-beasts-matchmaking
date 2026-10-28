@@ -3,6 +3,7 @@
 /artifacts/
 /backups/
 /analysis/
+/src/ChainedBeasts.Matchmaking/LocalOnly/
 *.dll
 *.exe
 *.pdb

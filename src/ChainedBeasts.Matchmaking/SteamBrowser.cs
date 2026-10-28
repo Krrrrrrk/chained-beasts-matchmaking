@@ -101,10 +101,8 @@ internal sealed class SteamBrowser : ILobbyBackend, IDisposable
         _searchAction = (data, failed) => OnSearch(token, data, failed);
         _searchDelegate = _searchAction;
         _search = CallResult<LobbyMatchList_t>.Create(_searchDelegate);
-        SteamMatchmaking.AddRequestLobbyListStringFilter("transport_type", "steam", ELobbyComparison.k_ELobbyComparisonEqual);
-        if (!options.OtherBuilds)
-            SteamMatchmaking.AddRequestLobbyListStringFilter("build", build, ELobbyComparison.k_ELobbyComparisonEqual);
-        // No cbmm_* filter: ordinary native public lobbies are included.
+        foreach (var filter in DiscoveryRules.StringFilters(options, build, Plugin.RequireProtocol))
+            SteamMatchmaking.AddRequestLobbyListStringFilter(filter.Key, filter.Value, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListFilterSlotsAvailable(1);
         SteamMatchmaking.AddRequestLobbyListDistanceFilter(options.Worldwide ?
             ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide : ELobbyDistanceFilter.k_ELobbyDistanceFilterDefault);
@@ -124,7 +122,11 @@ internal sealed class SteamBrowser : ILobbyBackend, IDisposable
             var lobbies = new List<Lobby>();
             for (var i = 0; i < Math.Min((long)data.m_nLobbiesMatching, Browser.MaximumResults); i++)
             {
-                try { lobbies.Add(ReadLobby(SteamMatchmaking.GetLobbyByIndex(i))); }
+                try
+                {
+                    var lobby = ReadLobby(SteamMatchmaking.GetLobbyByIndex(i));
+                    if (DiscoveryRules.Visible(lobby, Plugin.RequireProtocol)) lobbies.Add(lobby);
+                }
                 catch (Exception e) { Plugin.Logger.LogWarning("[Matchmaking] skipped an unreadable lobby: " + e.GetType().Name); }
             }
             // Copy the current result IDs/data inside this callback before another list replaces them.
@@ -171,8 +173,10 @@ internal sealed class SteamBrowser : ILobbyBackend, IDisposable
         try
         {
             Context = ReadContext();
-            Browser.LobbyRefreshed(token, data.m_bSuccess != 0 ? ReadLobby(new CSteamID(id)) : null,
-                data.m_bSuccess != 0 ? null : "Steam reports that lobby is unavailable.", Context);
+            var lobby = data.m_bSuccess != 0 ? ReadLobby(new CSteamID(id)) : null;
+            var eligible = lobby != null && DiscoveryRules.Visible(lobby, Plugin.RequireProtocol);
+            Browser.LobbyRefreshed(token, eligible ? lobby : null,
+                eligible ? null : "Lobby unavailable or no longer advertising matchmaking.", Context);
         }
         catch (Exception e) { Browser.LobbyRefreshed(token, null, "Could not refresh the lobby: " + e.Message, Context); }
         finally { _inCallback = false; }
@@ -208,19 +212,16 @@ internal sealed class SteamBrowser : ILobbyBackend, IDisposable
             { _advertisedLobby = 0; _lastAdvert = ""; return; }
             var id = controller.lobbyID;
             if (SteamMatchmaking.GetLobbyOwner(id) != SteamUser.GetSteamID()) return;
-            if (!Plugin.AdvertiseCompatibility.Value) { RemoveOwnAdvert(); return; }
             var waiting = controller.isLobbyOpen && SceneManager.GetSceneByName("GameServerLobby").isLoaded;
-            var fingerprint = FoundationCompatibility.Read() ?? "unknown";
-            var owner = SteamUser.GetSteamID().m_SteamID.ToString(CultureInfo.InvariantCulture);
+            var fingerprint = Plugin.AdvertiseCompatibility.Value ? FoundationCompatibility.Read() ?? "unknown" : null;
             var state = waiting ? "waiting" : "closed";
             var name = LobbyPolicy.Display(SteamFriends.GetPersonaName());
             var identity = id.m_SteamID + "/" + fingerprint + "/" + state + "/" + name;
             if (_lastAdvert == identity) return;
-            var okay = SteamMatchmaking.SetLobbyData(id, LobbyPolicy.ProtocolKey, "1") &
-                SteamMatchmaking.SetLobbyData(id, LobbyPolicy.OwnerKey, owner) &
-                SteamMatchmaking.SetLobbyData(id, LobbyPolicy.FingerprintKey, fingerprint) &
-                SteamMatchmaking.SetLobbyData(id, LobbyPolicy.NameKey, name) &
-                SteamMatchmaking.SetLobbyData(id, LobbyPolicy.StateKey, state);
+            var tags = DiscoveryRules.Advertisement(SteamUser.GetSteamID().m_SteamID, name, waiting, fingerprint);
+            var okay = true;
+            foreach (var pair in tags) okay &= SteamMatchmaking.SetLobbyData(id, pair.Key, pair.Value);
+            if (fingerprint == null) SteamMatchmaking.DeleteLobbyData(id, LobbyPolicy.FingerprintKey);
             _advertisedLobby = id.m_SteamID;
             if (okay) _lastAdvert = identity;
         }

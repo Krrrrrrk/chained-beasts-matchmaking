@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ChainedBeasts.Matchmaking;
 
 // Presentation only: actions are queued for Update. No Steam calls or injected managed-parameter methods.
-internal sealed class BrowserMenuView
+internal sealed class BrowserMenuView : IDisposable
 {
     internal bool Worldwide, OtherBuilds, Acknowledge, RefreshRequested, JoinRequested, OpenRequested, CloseRequested, UseFallback;
     internal ulong Selected;
@@ -12,6 +12,7 @@ internal sealed class BrowserMenuView
     internal double RefreshAfter;
     private const int PageSize = 5;
     private float _scale, _left, _top;
+    private readonly UiIcons _icons = new();
     private BrowserTheme _theme;
     private GUIContent _content;
     private readonly Dictionary<string, string> _clippedTitles = new();
@@ -41,8 +42,9 @@ internal sealed class BrowserMenuView
             Fill(R(0, 0, 5, 118), BrowserTheme.Gold);
             Fill(R(28, 117, 1064, 1), BrowserTheme.Border);
             Label(28, 23, 700, 18, "CHAINED BEASTS  /  PLAY TOGETHER", _theme.Eyebrow);
-            Label(26, 46, 740, 44, "FIND A PACK", _theme.Title);
-            Label(28, 91, 760, 20, "Public lobbies. One good run waiting to happen.", _theme.Muted);
+            _icons.Draw(UiIcon.Party, R(28, 48, 42, 42), BrowserTheme.Gold);
+            Label(84, 46, 682, 44, "FIND A PACK", _theme.Title);
+            Label(28, 91, 760, 20, "Find a pack using Chained Beasts Matchmaking.", _theme.Muted);
             Badge(920, 28, 94, 26, "STEAM", BrowserTheme.Teal, _theme.BadgeDark);
             if (Button(1044, 24, 48, 36, "X", _theme.Button, BrowserTheme.Raised, BrowserTheme.Hover)) CloseRequested = true;
             Label(900, 82, 192, 18, $"{Plugin.ToggleKey.Value} / ESC TO CLOSE", _theme.SmallRight);
@@ -54,6 +56,8 @@ internal sealed class BrowserMenuView
         }
         finally { GUI.color = oldColor; GUI.contentColor = oldContent; GUI.enabled = oldEnabled; GUI.depth = oldDepth; }
     }
+
+    public void Dispose() => _icons.Dispose();
 
     private void DrawLauncher()
     {

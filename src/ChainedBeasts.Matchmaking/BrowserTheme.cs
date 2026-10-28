@@ -21,7 +21,7 @@ internal sealed class BrowserTheme
     private static readonly Color Cream = new(.953f, .929f, .886f, 1);
     private static readonly Color Faded = new(.678f, .663f, .753f, 1);
     internal GUIStyle Title, Eyebrow, Muted, Small, SmallRight, Button, ButtonDark, DisabledButton, BadgeDark,
-        RoomTitle, DetailsTitle, Body, Count, CountRight, EmptyTitle, CenteredMuted, Transparent, Status;
+        RoomTitle, DetailsTitle, Body, ChatBody, ChatSender, Count, CountRight, EmptyTitle, CenteredMuted, Transparent, Status;
     private float _preparedScale = -1;
 
     internal void Prepare(float scale)
@@ -40,6 +40,8 @@ internal sealed class BrowserTheme
         RoomTitle = Style(18, Cream, FontStyle.Bold, TextAnchor.MiddleLeft, scale);
         DetailsTitle = Style(22, Cream, FontStyle.Bold, TextAnchor.UpperLeft, scale, true);
         Body = Style(13, Cream, FontStyle.Normal, TextAnchor.MiddleLeft, scale, true);
+        ChatBody = Style(13, Cream, FontStyle.Normal, TextAnchor.UpperLeft, scale, true);
+        ChatSender = Style(13, Gold, FontStyle.Bold, TextAnchor.UpperLeft, scale);
         Count = Style(26, Cream, FontStyle.Bold, TextAnchor.MiddleLeft, scale);
         CountRight = Style(24, Cream, FontStyle.Bold, TextAnchor.MiddleRight, scale);
         EmptyTitle = Style(24, Cream, FontStyle.Bold, TextAnchor.MiddleCenter, scale, true);
