@@ -56,6 +56,18 @@ after a search; the browser does not override the host's admission rules.
 
 </details>
 
+![Location ping shown on the sender's screen](docs/screenshots/location-ping.png)
+
+<details>
+<summary>Hold G for Ping here, Thanks or Sorry</summary>
+
+![The radial ping wheel in a multiplayer run](docs/screenshots/ping-wheel.png)
+
+</details>
+
+Multiplayer ping visibility is being investigated. A connected relay confirms
+the handshake; it does not establish that another player saw the marker.
+
 **Known issue in v0.6.2:** opening F8 host controls can crash the game. Until the
 fix has been tested, set `[HostTools] Enabled = false` in the config and restart.
 The browser, pings and chat can still be used independently.
