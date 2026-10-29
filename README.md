@@ -45,6 +45,21 @@ show `Lobby <ID>` instead of a host's name. That is expected and does not make
 the room invalid. Public rooms can still fill, close, or reject a connection
 after a search; the browser does not override the host's admission rules.
 
+## Screenshots
+
+![An advertised lobby in the Find a Pack browser](docs/screenshots/browser-lobby.png)
+
+<details>
+<summary>Browser with no available lobbies</summary>
+
+![The browser with no open matchmaking lobbies](docs/screenshots/browser-empty.png)
+
+</details>
+
+**Known issue in v0.6.2:** opening F8 host controls can crash the game. Until the
+fix has been tested, set `[HostTools] Enabled = false` in the config and restart.
+The browser, pings and chat can still be used independently.
+
 ## Install
 
 Requires Chained Beasts **1.0.2 / Steam build 26231777**, Unity **6000.5.11f1**, and
