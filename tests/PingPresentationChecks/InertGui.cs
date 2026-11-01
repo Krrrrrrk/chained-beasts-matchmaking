@@ -59,7 +59,7 @@ namespace UnityEngine
         public static bool enabled=true; public static int depth; public static GUISkin skin=new();
         public static List<object> Commands=new();
         public static void DrawTexture(Rect r,Texture2D texture,ScaleMode mode,bool alpha) => Commands.Add(new { kind="rect",r.x,r.y,r.width,r.height,textureWidth=texture.Width,textureHeight=texture.Height,pixels=texture.Pixels==null?null:Convert.ToBase64String(texture.Pixels),color=new[]{color.r,color.g,color.b,color.a} });
-        public static void Label(Rect r,string text,GUIStyle style) => Commands.Add(new { kind="text",r.x,r.y,r.width,r.height,text,size=style.fontSize,bold=style.fontStyle==FontStyle.Bold,align=style.alignment.ToString(),wrap=style.wordWrap,color=new[]{style.normal.textColor.r,style.normal.textColor.g,style.normal.textColor.b,style.normal.textColor.a} });
+        public static void Label(Rect r,string text,GUIStyle style) => Commands.Add(new { kind="text",r.x,r.y,r.width,r.height,text,size=style.fontSize,bold=style.fontStyle==FontStyle.Bold,align=style.alignment.ToString(),wrap=style.wordWrap,enabled=enabled,color=new[]{style.normal.textColor.r,style.normal.textColor.g,style.normal.textColor.b,style.normal.textColor.a} });
         public static bool Button(Rect r,GUIContent content,GUIStyle style){ if(!string.IsNullOrEmpty(content.text)) Label(r,content.text,style); return false; }
     }
     public static class GUILayout

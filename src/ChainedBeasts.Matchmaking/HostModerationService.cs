@@ -30,9 +30,12 @@ internal sealed class HostModerationService : IHostModerationBackend
         account = 0;
         // NGO client numbers change on reconnect. Bind them to the authenticated Steam socket,
         // not UGSConnectionPayload.playerID/displayName (which originate in a client's payload).
-        if (manager?.ConnectionManager == null || transport?.transport?.connectionMapping == null) return false;
-        var mapped = manager.ConnectionManager.ClientIdToTransportId(client);
-        if (!mapped.Item2 || !transport.transport.connectionMapping.TryGetValue(mapped.Item1, out var connection) ||
+        var ids = manager?.ConnectionManager?.ClientIdToTransportIdMap;
+        var sockets = transport?.transport?.connectionMapping;
+        // Read the same native lookup table without invoking a generic ValueTuple-returning method.
+        // Never infer identity from the client-supplied connection payload or name.
+        if (ids == null || sockets == null || !ids.TryGetValue(client, out var transportId)) return false;
+        if (!sockets.TryGetValue(transportId, out var connection) ||
             connection is null || !connection.id.IsValid() || connection.id.IsLobby()) return false;
         account = connection.id.m_SteamID;
         return account != 0;

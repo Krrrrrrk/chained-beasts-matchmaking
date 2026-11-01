@@ -26,6 +26,44 @@ static class GamepadChecks
             check(PingView.Last.Visuals.Single().Label=="P1  Sorry!","Controller quick message uses the existing local relay and roster label.");
         }
 
+        using(var f=new PadFixture())
+        {
+            GameInput.assignedDevices.Clear();
+            f.Player.InputUser.Device=null;
+            f.Frame(true);f.Frame(false);
+            check(PingView.Last.Visuals.Length==1&&PingView.Last.Visuals[0].Packet.Kind==PingKind.Location,
+                "Native primary-device fallback allows a Solo controller tap without an explicit assignment or cached InputUser device.");
+        }
+        using(var f=new PadFixture())
+        {
+            GameInput.assignedDevices.Clear();f.Frame(true);f.Frame(true,dt:.23);
+            f.Frame(true,PadFixture.Direction(PingKind.Thanks));f.Frame(false);
+            check(PingView.Last.Visuals.Length==1&&PingView.Last.Visuals[0].Packet.Kind==PingKind.Thanks,
+                "The same native fallback supports hold/right-stick/release without a mouse or keyboard.");
+        }
+        using(var f=new PadFixture())
+        {
+            var client=f.Player.clientID.Value;
+            GameInput.assignedDevices.Clear();
+            GameInput.assignedDevices[new ClientIdentifier{NetworkID=client.NetworkID,LocalID=client.LocalID,PlayerIndex=client.PlayerIndex}]=f.Pad;
+            f.Frame(true);f.Frame(false);
+            check(PingView.Last.Visuals.Length==1,"Equivalent native client identifiers resolve controller ownership by value, not wrapper identity.");
+        }
+        foreach(var facing in new[]{new Vector3(1,0,0),new Vector3(-1,0,0),new Vector3(0,0,-1),new Vector3(1,.8f,1)})
+        using(var f=new PadFixture())
+        {
+            f.Player.transform.position=new(10,0,20);
+            f.Player.transform.forward=new(0,0,1); // Root stays north while the visual model turns.
+            f.Player.agentModel.networkAnimator.transform.forward=facing;
+            Camera.main.PanX=37;Camera.main.PanZ=-12;
+            f.Frame(true);f.Frame(false);
+            var point=PingView.Last.Visuals.Single().Packet.Position;
+            var length=Math.Sqrt(facing.x*facing.x+facing.z*facing.z);
+            check(Math.Abs(point.X-(10+6*facing.x/length))<.001&&Math.Abs(point.Z-(20+6*facing.z/length))<.001,
+                "Controller ping follows the actual animated-model facing, not the north-facing root or camera.");
+            check(Math.Abs(Math.Sqrt(Math.Pow(point.X-10,2)+Math.Pow(point.Z-20,2))-6)<.001&&point.Y==0,
+                "Facing capture places the ping exactly six horizontal world units ahead on the floor.");
+        }
         using(var f=new PadFixture(7))
         {
             var before=f.Node.GameplayImage();f.Frame(true);f.Frame(false);
@@ -51,10 +89,13 @@ static class GamepadChecks
         }
         using(var f=new PadFixture())
         {
-            f.Frame(true,new(1,0));f.Frame(true,new(-1,0),dt:.23);
+            f.Player.agentModel.networkAnimator.transform.forward=new(1,0,0);
+            f.Frame(true,new(-1,0));
+            f.Player.agentModel.networkAnimator.transform.forward=new(-1,0,0);
+            f.Frame(true,new(-1,0),dt:.23);
             f.Frame(true,new(0,1));f.Frame(false);
             var point=PingView.Last.Visuals.Single().Packet.Position;
-            check(Math.Abs(point.X-6)<.001 && Math.Abs(point.Z)<.001,"Screen-relative initial stick aim fixes a world point before radial selection changes the stick.");
+            check(Math.Abs(point.X-6)<.001 && Math.Abs(point.Z)<.001,"Initial model facing fixes a world point; camera, later turning and radial stick selection cannot redirect it.");
         }
         using(var f=new PadFixture())
         {
@@ -111,8 +152,9 @@ static class GamepadChecks
         }
         using(var f=new PadFixture())
         {
-            f.Frame(true,new(float.NaN,0));f.Frame(false);
-            check(PingView.Last.Visuals.Length==0,"Invalid controller aim cannot send a location.");
+            f.Player.agentModel.networkAnimator.transform.forward=new(float.NaN,0,0);
+            f.Frame(true);f.Frame(false);
+            check(PingView.Last.Visuals.Length==0,"Invalid model facing cannot send a location.");
             f.Frame(false);f.Gesture(PingKind.Thanks);
             check(PingView.Last.Visuals.Single().Packet.Kind==PingKind.Thanks,"Unavailable controller ground aim does not disable quick messages.");
         }
@@ -120,6 +162,13 @@ static class GamepadChecks
         {
             f.Frame(true);var keys=Keyboard.current=new();keys.escapeKey.Set(true);f.Frame(true);
             check(!PingController.IsWheelOpen && PingView.Last.Visuals.Length==0,"Keyboard Escape can cancel a pending controller gesture.");
+        }
+        using(var f=new PadFixture())
+        {
+            f.Player.agentModel=null;f.Frame(true);f.Frame(false);
+            check(PingView.Last.Visuals.Length==0,"A missing visual model does not silently fall back to a north-facing root.");
+            f.Gesture(PingKind.Sorry);
+            check(PingView.Last.Visuals.Single().Packet.Kind==PingKind.Sorry,"Missing facing still permits a held quick message.");
         }
         check(InertBus.DisconnectCalls==0,"Controller cosmetics never disconnect or start/stop the game.");
     }
@@ -135,7 +184,7 @@ static class GamepadChecks
         {
             InertBus.Reset();Node=InertBus.Add(id,id==0,false);InertBus.Roster(id);Node.Activate();
             Plugin.PingsEnabled=true;Plugin.PingGamepadEnabled=true;Plugin.PingKey.Value=Key.None;
-            Player=Node.Players.players[0];Pad=new();Other=new();Player.InputUser.Device=Pad;GameInput.assignedDevices[Player.clientID.Value]=Pad;
+            Player=Node.Players.players[0];Player.agentModel=new(){networkAnimator=new()};Pad=new();Other=new();Player.InputUser.Device=Pad;GameInput.assignedDevices[Player.clientID.Value]=Pad;
             Keyboard.current=null;Mouse.current=null;Camera.main=new();
             Application.isFocused=true;BrowserController.IsOpen=false;SetHostOpen(false);
             Cursor.visible=false;Cursor.lockState=CursorLockMode.Locked;Screen.width=1920;Screen.height=1080;
@@ -167,11 +216,11 @@ static class GamepadChecks
                 case "focus":Application.isFocused=false;break;
                 case "browser":BrowserController.IsOpen=true;break;
                 case "host":SetHostOpen(true);break;
-                case "unassigned":Player.InputUser.Device=null;break;
-                case "mapping-lost":GameInput.assignedDevices.Clear();break;
+                case "unassigned":Player.InputUser.Device=null;GameInput.assignedDevices.Clear();GameInput.assignedDevices[new ClientIdentifier{NetworkID=99}]=Other;break;
+                case "mapping-lost":GameInput.assignedDevices.Clear();GameInput.assignedDevices[new ClientIdentifier{NetworkID=99}]=Other;break;
                 case "removed":Pad.added=false;break;
-                case "reassigned":Player.InputUser.Device=Other;break;
-                case "owner":Player.playerData.Pointer=new(99999);break;
+                case "reassigned":Player.InputUser.Device=Other;GameInput.assignedDevices[Player.clientID.Value]=Other;break;
+                case "owner":Player.Pointer=new(99999);break;
                 case "resize":Screen.width=1280;break;
                 case "scene":Node.Ex.SceneOperationInProgress=true;break;
                 case "disabled":Plugin.PingGamepadEnabled=false;break;

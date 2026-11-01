@@ -105,7 +105,8 @@ static class ArtifactChecks
                             var chatLease = name == "ChatController" && (owner == "Player" && memberName is "PushInputBlock" or "PopInputBlock" ||
                                 owner == "UIManager" && memberName is "PushGameInputBlock" or "PopGameInputBlock");
                             if (chatLease) chatLeases.Add(owner + "." + memberName);
-                            if (gameTypes.Contains(owner) && !memberName.StartsWith("get_", StringComparison.Ordinal) && !chatLease && !(name == "ChatProfanity" && owner == "PlayerNameFilter" && memberName == "Sanitize")) nativeWrites.Add(owner + "." + memberName);
+                            var readOnlyDeviceOwner = name == "GamepadPings" && owner == "GameInput" && memberName == "GetDeviceClient";
+                            if (gameTypes.Contains(owner) && !memberName.StartsWith("get_", StringComparison.Ordinal) && !chatLease && !readOnlyDeviceOwner && !(name == "ChatProfanity" && owner == "PlayerNameFilter" && memberName == "Sanitize")) nativeWrites.Add(owner + "." + memberName);
                             if (owner == "Unity.Netcode.NetworkManager" && memberName is "DisconnectClient" or "Shutdown" or "StartHost" or "StartClient" or "StartServer")
                                 forbiddenLifecycle.Add(owner + "." + memberName);
                         }

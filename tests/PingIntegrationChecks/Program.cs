@@ -90,7 +90,9 @@ Check(PingWorld.Local() == null && !one.Submit(PingKind.Thanks), "Despawned play
 one.Players.players[1].IsSpawned = true;
 var liveData = one.Players.players[1].playerData;
 one.Players.players[1].playerData = new() { Pointer = new(90000), playerID = 1 };
-Check(PingWorld.Local() == null, "A stale object with reused slot but different roster binding is rejected.");
+Check(PingWorld.Local() != null, "Equivalent player-data instances retain the live network-identified actor binding.");
+one.Players.players[1].playerData.playerID=2;
+Check(PingWorld.Local()==null,"A player-data slot that disagrees with the native client identifier remains rejected.");
 one.Players.players[1].playerData = liveData;
 
 // A callback storm is bounded, and malformed buffers do not tear down the channel.
@@ -186,6 +188,7 @@ Check(host.Shown.Count == previous + 1, "Lease recovery establishes delivery, no
 
 Check(InertBus.DisconnectCalls == 0, "Disconnect remains game-owned in all recovery/delay cases.");
 
+PingDeliveryChecks.Run(Check);
 ControllerChecks.Run(Check);
 GamepadChecks.Run(Check);
 HostToolsChecks.Run(Check);

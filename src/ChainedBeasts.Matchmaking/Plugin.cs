@@ -16,7 +16,7 @@ public sealed partial class Plugin : BasePlugin
 {
     public const string Guid = "local.chainedbeasts.matchmaking";
     public const string Name = "Chained Beasts Matchmaking";
-    public const string Version = "0.6.2";
+    public const string Version = "0.6.5";
     internal static ManualLogSource Logger = null!;
     internal static ConfigEntry<Key> ToggleKey = null!;
     internal static ConfigEntry<bool> AdvertiseCompatibility = null!;
@@ -47,7 +47,7 @@ public sealed partial class Plugin : BasePlugin
             "Tag your existing Steam lobby with optional Foundation compatibility information. Does not change its visibility or joinability.");
         PingKey = Config.Bind("Pings", "HoldKey", Key.G, "Tap to ping the aimed floor point; hold for 0.22 seconds, move toward an option, then release. Restart to apply.");
         PingGamepadEnabled = Config.Bind("Pings", "GamepadEnabled", true, "Enable combat-only tap/hold pings on the primary player's assigned controller. Restart to apply.").Value;
-        PingPadButton = Config.Bind("Pings", "GamepadButton", Core.PingPadButton.DpadUp, "Combat-only D-pad binding. Tap to ping six units ahead; hold, choose with right stick, release. Restart to apply.");
+        PingPadButton = Config.Bind("Pings", "GamepadButton", Core.PingPadButton.DpadUp, "Combat-only D-pad binding. Tap to ping six world units along the visible character facing; hold, choose with right stick, release. Restart to apply.");
         ChatEnabled = Config.Bind("Chat", "Enabled", true, "Enable optional party text chat. Host and participants need the chat update. Restart to apply.").Value;
         ChatKey = Config.Bind("Chat", "OpenKey", Key.T, "Press T to open party chat with a physical keyboard. Enter sends, Escape cancels. Restart to apply.");
         PingsEnabled = Config.Bind("Pings", "Enabled", true, "Enable the optional cosmetic ping wheel. Sharing requires an updated host and receiving players. Restart to apply.").Value;

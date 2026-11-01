@@ -37,7 +37,9 @@ internal static class PingWorld
                 client.NetworkID != network || client.PlayerIndex != index ||
                 client.PlayerIndex != (ulong)data.playerID) continue;
             for (var j = 0; j < Math.Min(roster.Count, 8); j++)
-                if (roster[j]?.Pointer == data.Pointer) return player;
+                // Native GetPlayerDataByIndex resolves by playerID, not object address.
+                // A refreshed client roster may contain another instance for the same slot.
+                if (roster[j]?.playerID == data.playerID) return player;
         }
         return null;
     }

@@ -15,6 +15,14 @@ static class HostToolsChecks
         var transport = (SteamTransportController)host.Ex.Transport;
         service.Tick();
         check(service.Policy.Active && service.Policy.Peers().Single().Account == 10007, "Host reads the stable account from the Steam transport mapping.");
+        check(host.Manager.ConnectionManager.Lookups > 0, "Host roster uses the actual NGO map without calling the tuple-returning native method.");
+        var mapped=host.Manager.ConnectionManager.Map[7];
+        host.Manager.ConnectionManager.Map.Remove(7);
+        check(service.Policy.Peers().Single().Account==0 && !service.Policy.RequestKick(7,0),"A missing connection-map entry keeps the guest visible but not kickable.");
+        host.Manager.ConnectionManager.Map[7]=mapped;
+        var socket=transport.transport.connectionMapping[mapped];transport.transport.connectionMapping.Remove(mapped);
+        check(service.Policy.Peers().Single().Account==0,"A missing authenticated socket cannot fall back to a claimed player ID.");
+        transport.transport.connectionMapping[mapped]=socket;
         transport.clientPayloads[7].playerID = "10000"; transport.clientPayloads[7].displayName = "I am the host";
         check(service.Policy.Peers().Single().Account == 10007, "Spoofed connection-payload playerID/name cannot change socket identity.");
         check(service.Policy.RequestKick(7, 10007) && service.Policy.ConfirmKick(), "Host confirmation calls the real moderation adapter's disconnect path.");

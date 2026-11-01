@@ -194,7 +194,8 @@ namespace Unity.Netcode
     {
         public readonly Dictionary<ulong, ulong> Map = new();
         public int Lookups;
-        public (ulong, bool) ClientIdToTransportId(ulong id) { Lookups++; return Map.TryGetValue(id, out var value) ? (value, true) : (0, false); }
+        public Dictionary<ulong, ulong> ClientIdToTransportIdMap { get { Lookups++; return Map; } }
+        public (ulong, bool) ClientIdToTransportId(ulong id) => throw new InvalidOperationException("Generic native tuple lookup must not be invoked.");
     }
     public struct NetworkTime { public double Time; }
     public sealed class CustomMessagingManager
@@ -298,14 +299,24 @@ public sealed class NetworkSession
 public sealed class NetworkSceneRoot { public ulong NetworkObjectId = 43; public bool IsSpawned = true, AllowUpdates = true; public string sceneName = "arena"; }
 public sealed class RunDataManager { public List<PlayerData> playerDatas = new(); }
 public sealed class PlayerData { public IntPtr Pointer; public int playerID; }
-public sealed class ClientIdentifier { public ulong NetworkID, PlayerIndex; public string DisplayName="Sample name"; }
+public sealed class ClientIdentifier { public ulong NetworkID, LocalID, PlayerIndex; public string DisplayName="Sample name"; }
 public sealed class Variable<T> { public T Value; }
 public class UIManager {public static int inputBlockCount;public static bool GameInputBlocked {get=>inputBlockCount>0;set=>inputBlockCount=value?1:0;}
         public static void PushGameInputBlock<T>(){inputBlockCount++;}public static void PopGameInputBlock<T>(){inputBlockCount--;}}
 public sealed class GameLevel { public enum eGameState { RUNNING, LEVEL_COMPLETE, LEVEL_FAILED, DEMO_COMPLETE } public eGameState ActiveGameState; }
-public static class GameInput {public static Dictionary<ClientIdentifier,UnityEngine.InputSystem.InputDevice> assignedDevices=new(); public sealed class IUserInput {public UnityEngine.InputSystem.InputDevice Device;}}
+public static class GameInput {
+    public static Dictionary<ClientIdentifier,UnityEngine.InputSystem.InputDevice> assignedDevices=new();
+    public static ClientIdentifier GetDeviceClient(UnityEngine.InputSystem.InputDevice device) {
+        if(device==null)return null;
+        foreach(var pair in assignedDevices)if(pair.Value?.Pointer==device.Pointer)return pair.Key;
+        return assignedDevices.Count==0&&NetworkSession.InstanceExists?NetworkSession.Instance.primaryIdentifier:null;
+    }
+    public sealed class IUserInput {public UnityEngine.InputSystem.InputDevice Device;}
+}
 public sealed class Player
 {
+    private static int _nextPointer=100000;
+    public IntPtr Pointer=new(++_nextPointer);
     public GameInput.IUserInput InputUser=new();
     private bool _inputBlocked;
     public bool IsInputBlocked {get=>_inputBlocked||inputBlockCount>0;set=>_inputBlocked=value;}
@@ -320,7 +331,8 @@ public sealed class Player
     public AgentModel agentModel;
     public Plane mouseTargetPlane = new() { m_Normal = new(0,1,0) };
 }
-public sealed class AgentModel { public Transform headTransform; }
+public sealed class AgentModel { public Transform headTransform; public Unity.Netcode.Components.NetworkAnimator networkAnimator; }
+namespace Unity.Netcode.Components { public sealed class NetworkAnimator { public Transform transform=new(); } }
 public sealed class PlayerManager
 {
     public static PlayerManager Instance;

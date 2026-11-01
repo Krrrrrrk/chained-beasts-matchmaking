@@ -40,7 +40,6 @@ public sealed class PingController : MonoBehaviour
         {
             if (!Plugin.PingsEnabled) { Cancel(); _visuals.Clear(); _network?.Dispose(); UnityEngine.Object.Destroy(this); return; }
             if (_network == null) { _network = new(); _network.Received += Show; _network.Cleared += ClearVisuals; }
-            _network.Tick();
             var ready = PingWorld.Ready(out var session);
             var scene = ready ? session.sceneRoot.NetworkObjectId : 0;
             var name = ready ? PingWorld.SceneName(session) : 0;
@@ -49,6 +48,8 @@ public sealed class PingController : MonoBehaviour
                 Cancel(); _visuals.Clear(); _camera = null;
                 _session = ready ? session.Pointer : IntPtr.Zero; _scene = scene; _sceneName = name;
             }
+            // Bind our current scene before the relay invokes a Show callback.
+            _network.Tick();
             if (!ready) return;
             var now = Time.realtimeSinceStartupAsDouble;
             if (_camera == null || now >= _cameraAt) { _camera = Camera.main; _cameraAt = now + .5; }

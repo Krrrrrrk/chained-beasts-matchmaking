@@ -4,7 +4,7 @@ I wanted a way to find public Chained Beasts games without swapping lobby codes.
 This is my first pass: a small Steam lobby browser that uses the game's existing
 hosting and joining system.
 
-**0.6.2.** I've added party text chat alongside controller
+**[0.6.5](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/tag/v0.6.5).** I've added party text chat alongside controller
 and keyboard pings, the lobby browser and host controls. Builds and nongame
 checks pass, and I've tested the browser, pings and Solo chat locally.
 Physical-controller and full multiplayer checks still need more testing.
@@ -68,20 +68,18 @@ after a search; the browser does not override the host's admission rules.
 Multiplayer ping visibility is being investigated. A connected relay confirms
 the handshake; it does not establish that another player saw the marker.
 
-**Known issue in v0.6.2:** opening F8 host controls can crash the game. Until the
-fix has been tested, set `[HostTools] Enabled = false` in the config and restart.
-The browser, pings and chat can still be used independently.
+**Fixed since 0.6.2:** the F8 host-panel crash has a code fix in 0.6.3 and newer. The latest build also fixes ping delivery and controller targets, using the direction your visible beast is facing. These fixes pass the offline checks; I still need more controller and host/client playtests. You can disable `[HostTools] Enabled` if F8 gives you trouble.
 
 ## Install
 
-Requires Chained Beasts **1.0.2 / Steam build 26231777**, Unity **6000.5.11f1**, and
+Requires Chained Beasts **1.0.2 / Steam build 26231777**, Unity **6000.3.21f1**, and
 **BepInEx 6.0.0-be.791+b782da4, Windows x64 Unity IL2CPP**.
 Download the loader from the [official BepInEx build page](https://builds.bepinex.dev/projects/bepinex_be/791)
 and follow the [IL2CPP installation guide](https://docs.bepinex.dev/master/articles/user_guide/installation/unity_il2cpp.html).
 The loader and game files are not included here. A different native game build
 disables this prototype until its integration has been checked.
 
-Download the mod ZIP from [GitHub Releases](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/latest).
+[Download Matchmaking 0.6.5](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/download/v0.6.5/ChainedBeasts.Matchmaking-0.6.5.zip).
 With the game closed, merge its `BepInEx` folder into the game folder. It installs
 two files together:
 
@@ -117,8 +115,8 @@ opens the wheel or moves the cursor.
 
 During live combat, my primary character's assigned controller can use:
 
-- **Tap D-pad Up:** ping six ground units ahead. Tilt the right stick to aim;
-  with the stick centered, it uses the character's facing direction.
+- **Tap D-pad Up:** ping six world units ahead in the direction my beast is
+  facing. The target follows the visible model's facing when I press the button.
 - **Hold D-pad Up for 0.22 seconds:** open the same wheel at the screen center.
   Use the right stick: up for Ping here, lower right for Thanks, lower left for Sorry.
 - **Release D-pad Up:** send the highlighted choice. Return the stick to center

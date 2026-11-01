@@ -2,6 +2,7 @@
   <PropertyGroup><TargetFramework>net6.0</TargetFramework><OutputType>Exe</OutputType><Nullable>disable</Nullable><ImplicitUsings>enable</ImplicitUsings><RollForward>LatestMajor</RollForward><CheckEolTargetFramework>false</CheckEolTargetFramework></PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\ChainedBeasts.Matchmaking\ChatView.cs" Link="Production/ChatView.cs" />
+    <Compile Include="..\..\src\ChainedBeasts.Matchmaking\HostToolsView.cs" Link="Production/HostToolsView.cs" />
     <ProjectReference Include="..\..\src\ChainedBeasts.Matchmaking.Core\ChainedBeasts.Matchmaking.Core.csproj" />
     <Compile Include="..\..\src\ChainedBeasts.Matchmaking\PingView.cs" Link="Production/PingView.cs" />
     <Compile Include="..\..\src\ChainedBeasts.Matchmaking\BrowserTheme.cs" Link="Production/BrowserTheme.cs" />

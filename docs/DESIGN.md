@@ -510,3 +510,7 @@ Missing multiplayer host capability still reports unavailable; it never becomes
 a Solo fallback. The UI labels this preview explicitly. Nongame checks exercise
 the source-linked adapter; real Solo UI/filter behavior and multiplayer delivery
 remain manual checks.
+
+## Changes in 0.6.3-0.6.5
+
+The F8 host panel uses a managed drawing callback instead of exposing an unsupported delegate shape to IL2CPP. Ping delivery guards handle negotiated peers across controller lifetime changes. Controller pings capture the visible model's facing direction, six world units ahead, rather than the unrelated root transform or right-stick wheel selection. Offline adapter and presentation checks cover these regressions; actual controller, Steam delivery and host moderation still need broader playtesting.

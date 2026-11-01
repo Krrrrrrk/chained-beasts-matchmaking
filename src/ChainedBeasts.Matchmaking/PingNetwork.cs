@@ -21,7 +21,7 @@ internal sealed class PingNetwork : IDisposable
     private readonly Queue<(ulong Sender, PingPacket Packet)> _pending = new();
     private readonly Dictionary<ulong, Peer> _peers = new();
     private readonly PingGate _requests = new(), _displayed = new();
-    private readonly HashSet<string> _sendErrors = new();
+    private readonly HashSet<string> _sendErrors = new(), _deliveryNotes = new();
     private NetworkManager _manager;
     private IntPtr _session;
     private CustomMessagingManager.HandleNamedMessageDelegate _handler;
@@ -33,7 +33,7 @@ internal sealed class PingNetwork : IDisposable
         (_manager.IsServer || _epoch != 0 && Time.realtimeSinceStartupAsDouble - _lastWelcome < LeaseLifetime);
     internal string Status => _faulted ? "Relay unavailable - local preview only" : Shared ?
         _manager.IsServer ? ActivePeers().Length == 0 ? "Local preview - no updated peers yet" :
-            $"Shared with {ActivePeers().Length} updated peer(s)" : "Shared through the host" :
+            $"Relay connected to {ActivePeers().Length} updated peer(s)" : "Connected to the host ping relay" :
         "Local preview - the host needs the ping update";
     internal event Action<PingPacket, double> Received;
     internal event Action Cleared;
@@ -64,8 +64,17 @@ internal sealed class PingNetwork : IDisposable
                 Plugin.Logger.LogInfo("[Pings] protocol 2 relay registered (" + (manager.IsServer ? "host" : "client") + ")");
             }
             var now = Time.realtimeSinceStartupAsDouble;
-            while (_pending.Count > 0)
-            { var item = _pending.Dequeue(); Process(item.Sender, item.Packet, now); }
+            var queued = _pending.Count;
+            while (queued-- > 0)
+            {
+                var item = _pending.Dequeue();
+                if (item.Packet.Message is PingMessage.Request or PingMessage.Show &&
+                    PingProtocol.Remaining(item.Packet, manager.ServerTime.Time) > 0 &&
+                    (!PingWorld.Ready(out _) || PingWorld.Find(item.Packet.Message == PingMessage.Request ? item.Sender : item.Packet.Author,
+                        item.Packet.PlayerIndex) == null))
+                { Note("waiting briefly for scene/actor readiness"); _pending.Enqueue(item); continue; }
+                Process(item.Sender, item.Packet, now);
+            }
             if (now < _maintenanceAt) return;
             _maintenanceAt = now + 1;
             if (manager.IsServer)
@@ -154,11 +163,18 @@ internal sealed class PingNetwork : IDisposable
                 }
                 return;
             }
-            if (!Shared || !PingWorld.Ready(out var session) || !PingProtocol.CanShow(packet, true, _epoch,
-                session.sceneRoot.NetworkObjectId, PingWorld.SceneName(session),
-                PingWorld.Find(packet.Author, packet.PlayerIndex) != null, _manager.ServerTime.Time)) return;
+            if (!Shared) { Note("display rejected: relay lease unavailable"); return; }
+            if (!PingWorld.Ready(out var session)) { Note("display expired while scene unready"); return; }
+            var actor = PingWorld.Find(packet.Author, packet.PlayerIndex) != null;
+            var remaining = PingProtocol.Remaining(packet, _manager.ServerTime.Time);
+            if (!PingProtocol.CanShow(packet, true, _epoch, session.sceneRoot.NetworkObjectId,
+                PingWorld.SceneName(session), actor, _manager.ServerTime.Time))
+            {
+                Note($"display rejected: epochMatch={packet.Epoch == _epoch}, sceneMatch={packet.Scene == session.sceneRoot.NetworkObjectId}, nameMatch={packet.SceneName == PingWorld.SceneName(session)}, actorFound={actor}, timeValid={remaining > 0}");
+                return;
+            }
             if (_displayed.Accept(packet.Author, packet.Sequence, now, rateLimit: false))
-                Received?.Invoke(packet, PingProtocol.Remaining(packet, _manager.ServerTime.Time));
+            { Note("display accepted from host"); Received?.Invoke(packet, remaining); }
         }
     }
 
@@ -166,14 +182,16 @@ internal sealed class PingNetwork : IDisposable
     {
         if (!PingWorld.Ready(out var session)) return false;
         var player = PingWorld.Find(sender, request.PlayerIndex);
-        if (player == null || !PingWorld.Position(player).Valid) return false;
+        if (player == null || !PingWorld.Position(player).Valid) { Note("request rejected: author actor unavailable"); return false; }
         if (!PingProtocol.CanRelay(request, _epoch, session.sceneRoot.NetworkObjectId,
             PingWorld.SceneName(session), true, PingWorld.Position(player), _manager.ServerTime.Time) ||
             !_requests.Accept(sender, request.Sequence, request.Created)) return false;
         var result = request with { Message = PingMessage.Show, Author = sender, Nonce = 0, Sequence = ++_relaySequence,
             Position = request.Kind == PingKind.Location ? request.Position : PingWorld.Position(player) };
         Received?.Invoke(result, PingProtocol.Remaining(result, _manager.ServerTime.Time));
-        foreach (var peer in ActivePeers()) Send(peer, result);
+        var recipients = ActivePeers();
+        foreach (var peer in recipients) Send(peer, result);
+        Note("accepted ping; offered to " + recipients.Length + " updated peer(s)");
         return true;
     }
 
@@ -221,6 +239,12 @@ internal sealed class PingNetwork : IDisposable
         finally { writer.Dispose(); }
     }
 
+    private void Note(string message)
+    {
+        // At most twelve distinct delivery notes per session; no per-frame spam or chat bodies.
+        if (_deliveryNotes.Count < 12 && _deliveryNotes.Add(message)) Plugin.Logger.LogInfo("[Pings] " + message);
+    }
+
     private void Fail(Exception e)
     {
         if (_faulted) return;
@@ -238,7 +262,7 @@ internal sealed class PingNetwork : IDisposable
         catch { }
         _manager = null; _handler = null; _session = IntPtr.Zero;
         _epoch = _advertisedLobby = _relaySequence = _ownNonce = _helloSequence = _pendingHello = 0;
-        _peers.Clear(); _pending.Clear(); _requests.Clear(); _displayed.Clear(); _sendErrors.Clear();
+        _peers.Clear(); _pending.Clear(); _requests.Clear(); _displayed.Clear(); _sendErrors.Clear(); _deliveryNotes.Clear();
         _helloAt = _maintenanceAt = _lastWelcome = 0; _receiveFailure = null; Cleared?.Invoke();
     }
     public void Dispose() { Reset(); _disposed = true; }

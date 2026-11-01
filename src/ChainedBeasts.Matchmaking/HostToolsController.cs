@@ -11,7 +11,7 @@ public sealed class HostToolsController : MonoBehaviour
     private readonly HostToolsView _view = new();
     private HostPeer[] _peers = Array.Empty<HostPeer>();
     private IReadOnlyList<BlockedAccount> _blocked = Array.Empty<BlockedAccount>();
-    private bool _wasVisible, _loggedFailure;
+    private bool _wasVisible, _loggedFailure, _traceOpen, _traceDraw;
     private CursorLockMode _wasLocked;
     private double _refreshAt;
     public HostToolsController(IntPtr pointer) : base(pointer) { }
@@ -38,12 +38,19 @@ public sealed class HostToolsController : MonoBehaviour
             {
                 _refreshAt = Time.realtimeSinceStartupAsDouble + .25;
                 _blocked = service.Policy.Blocked;
-                try { _peers = service.Policy.Peers(); }
+                try
+                {
+                    if (_traceOpen) Plugin.Logger.LogInfo("[Host tools] F8: reading connected accounts");
+                    _peers = service.Policy.Peers();
+                    if (_traceOpen) Plugin.Logger.LogInfo("[Host tools] F8: account list ready (" + _peers.Length + " remote)");
+                }
                 catch
                 {
                     // Keep Allow rejoin accessible even if the native peer/identity list is temporarily unreadable.
                     _peers = Array.Empty<HostPeer>();
+                    if (!_loggedFailure) { _loggedFailure = true; Plugin.Logger.LogWarning("[Host tools] account list unavailable; kick controls withheld"); }
                 }
+                finally { _traceOpen = false; }
             }
         }
         catch (Exception e)
@@ -56,7 +63,12 @@ public sealed class HostToolsController : MonoBehaviour
     public void OnGUI()
     {
         if (!IsOpen || Plugin.HostTools == null || !Plugin.HostTools.Policy.Active || Screen.width < 1 || Screen.height < 1) return;
-        try { _view.Draw(Plugin.HostTools.Policy, _peers, _blocked); }
+        try
+        {
+            if (_traceDraw) Plugin.Logger.LogInfo("[Host tools] F8: drawing panel");
+            _view.Draw(Plugin.HostTools.Policy, _peers, _blocked);
+            if (_traceDraw) { _traceDraw = false; Plugin.Logger.LogInfo("[Host tools] F8: panel draw complete"); }
+        }
         catch (Exception e)
         { SetOpen(false); if (!_loggedFailure) { _loggedFailure = true; Plugin.Logger.LogWarning("[Host tools] drawing failed: " + e); } }
     }
@@ -68,6 +80,8 @@ public sealed class HostToolsController : MonoBehaviour
         IsOpen = open;
         if (open)
         {
+            _traceOpen = _traceDraw = true;
+            Plugin.Logger.LogInfo("[Host tools] F8: opening panel");
             _wasVisible = Cursor.visible; _wasLocked = Cursor.lockState; _refreshAt = 0;
             Cursor.visible = true; Cursor.lockState = CursorLockMode.None;
         }

@@ -136,8 +136,9 @@ foreach(var open in new[]{false,true}) {
         Check(recovered==full[0].Text,"Long inline messages remain complete when reading the open history.");
     }
 }
+HostViewChecks.Run(Check);
 Console.WriteLine($"PASS: {count} source-linked ping presentation checks with inert camera/GUI. No Unity runtime invoked.");
 namespace ChainedBeasts.Matchmaking {
-    internal static class Plugin { internal static Option PingKey=new(); }
-    internal class Option { public string Value=>"G"; }
+    internal static class Plugin { internal static Option PingKey=new(); internal static Option HostToolsKey=new(){Value="F8"}; }
+    internal class Option { public string Value { get; set; }="G"; }
 }
