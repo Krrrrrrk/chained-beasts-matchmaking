@@ -7,8 +7,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$version = '0.6.5'
-$nativeHash = 'ba3ef02fa87da4c41bb27d7610539c9578132204f0fb5713833e2ef93415ce29'
+$version = '0.6.6'
+$nativeHash = '0deadea3eb9a6ee3bdb69ab7945d4b6dfe40a07be0727edb5cb4dc20c05c3f6e'
 $assemblies = @('ChainedBeasts.Matchmaking.dll', 'ChainedBeasts.Matchmaking.Core.dll')
 $project = Join-Path $repoRoot 'src\ChainedBeasts.Matchmaking\ChainedBeasts.Matchmaking.csproj'
 $output = Join-Path $repoRoot 'src\ChainedBeasts.Matchmaking\bin\Release\net6.0'
@@ -82,7 +82,7 @@ if ($Package) {
     $temporaryZip = Join-Path $artifactDir ([Guid]::NewGuid().ToString('N') + '.zip')
     [IO.Compression.ZipFile]::CreateFromDirectory($stage, $temporaryZip)
     Move-Item -LiteralPath $temporaryZip -Destination $zip -Force
-    [ordered]@{ version = $version; game = '1.0.2'; steamBuild = '26231777'; nativeSha256 = $nativeHash;
+    [ordered]@{ version = $version; game = '1.0.2'; steamBuild = '26369255'; nativeSha256 = $nativeHash;
         runtimeVerified = $false; publishedRelease = $false; files = $files;
         archive = (Split-Path $zip -Leaf); sha256 = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() } |
         ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $artifactDir 'package.json') -Encoding utf8

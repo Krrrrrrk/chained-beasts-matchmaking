@@ -1,13 +1,12 @@
 # Chained Beasts Matchmaking
 
+Updated for the Chained Beasts 1.0.2 hotfix, Steam build **26369255**. In-game and multiplayer retesting is still pending.
+
 I wanted a way to find public Chained Beasts games without swapping lobby codes.
 This is my first pass: a small Steam lobby browser that uses the game's existing
 hosting and joining system.
 
-**[0.6.5](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/tag/v0.6.5).** I've added party text chat alongside controller
-and keyboard pings, the lobby browser and host controls. Builds and nongame
-checks pass, and I've tested the browser, pings and Solo chat locally.
-Physical-controller and full multiplayer checks still need more testing.
+**[0.6.6](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/tag/v0.6.6)** updates the browser, pings, party chat and host controls for the hotfix. The browser, pings and Solo chat worked in my earlier local tests; this game build still needs a fresh check.
 
 The menus and ping wheel use embedded CC0 icons tinted to the teal, gold, and
 dark-purple interface. Thanks/Sorry keep their text labels as well as an icon.
@@ -72,14 +71,14 @@ the handshake; it does not establish that another player saw the marker.
 
 ## Install
 
-Requires Chained Beasts **1.0.2 / Steam build 26231777**, Unity **6000.3.21f1**, and
+Requires Chained Beasts **1.0.2 / Steam build 26369255**, Unity **6000.3.21f1**, and
 **BepInEx 6.0.0-be.791+b782da4, Windows x64 Unity IL2CPP**.
 Download the loader from the [official BepInEx build page](https://builds.bepinex.dev/projects/bepinex_be/791)
 and follow the [IL2CPP installation guide](https://docs.bepinex.dev/master/articles/user_guide/installation/unity_il2cpp.html).
 The loader and game files are not included here. A different native game build
 disables this prototype until its integration has been checked.
 
-[Download Matchmaking 0.6.5](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/download/v0.6.5/ChainedBeasts.Matchmaking-0.6.5.zip).
+[Download Matchmaking 0.6.6](https://github.com/Krrrrrrk/chained-beasts-matchmaking/releases/download/v0.6.6/ChainedBeasts.Matchmaking-0.6.6.zip).
 With the game closed, merge its `BepInEx` folder into the game folder. It installs
 two files together:
 
