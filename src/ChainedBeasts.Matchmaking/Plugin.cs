@@ -16,7 +16,7 @@ public sealed partial class Plugin : BasePlugin
 {
     public const string Guid = "local.chainedbeasts.matchmaking";
     public const string Name = "Chained Beasts Matchmaking";
-    public const string Version = "0.6.6";
+    public const string Version = "0.6.7";
     internal static ManualLogSource Logger = null!;
     internal static ConfigEntry<Key> ToggleKey = null!;
     internal static ConfigEntry<bool> AdvertiseCompatibility = null!;
@@ -58,7 +58,7 @@ public sealed partial class Plugin : BasePlugin
             using var stream = File.OpenRead(Path.Combine(Paths.GameRootPath, "GameAssembly.dll"));
             using var sha = SHA256.Create();
             var digest = Convert.ToHexString(sha.ComputeHash(stream));
-            if (!digest.Equals("0DEADEA3EB9A6EE3BDB69AB7945D4B6DFE40A07BE0727EDB5CB4DC20C05C3F6E", StringComparison.Ordinal))
+            if (!digest.Equals("AE48A9C3F8018D3F996C4E692A3736F8B5DCB4EAD5C8D0E6E40F3E83F0004A6A", StringComparison.Ordinal))
                 throw new NotSupportedException("Uninspected game build; browser disabled. GameAssembly SHA256=" + digest);
             _harmony = new Harmony(Guid);
             // Cancel only our own discovery when native code entry/invite joining takes over.
